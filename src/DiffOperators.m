@@ -1,10 +1,11 @@
-function [grids, dx, dy, grad_div, laplace] = DiffOperators(m, n)
-%LAPLACE Get matrix representing the laplace operator componenwise on a
-%staggered grid with dirichlet boundary condition
+function [grids, dx, dy, div, grad_div, laplace_d] = DiffOperators(m, n)
+%LAPLACE Get staggered grid differential operators currently only
+%implemented for square, i.e. m == n. 
 
-grids = grid(m, n);
+[omega1, omega2] = Grid(m, n);
+grids = {omega1, omega2};
 
-% grad dov
+% grad div
 div = [sparse(m, 1),[speye(m - 1); sparse(1, m - 1)] - [sparse(1, m - 1); speye(m - 1)], sparse(m, 1)];
 div = repmat({div}, 1, n);
 div = [blkdiag(div{:}),sparse(m*n, (m + 1) * n)]  ...
@@ -17,8 +18,10 @@ dy = -speye((m - 1) * n, m * n) + [sparse((m - 1) * n, m), speye((m - 1) * n)];
 
 grad_div = [dx; dy] * div;
 
-dx = dx/h;
-dy = dy/h;
+div = div * m;
+
+dx = dx * m;
+dy = dy * n;
 
 % insert zero rows for boundary nodes
 bd = repmat({[sparse(1, m - 1);speye(m - 1);sparse(1, m - 1)]}, 1, m);
@@ -42,6 +45,6 @@ laplace_diag = blkdiag(diag{:});
 laplace_diag = spdiags([ones(n * (m - 1), 1), ones(n * (m - 1), 1)],[-n, n], n * (m - 1),m*(n - 1)) + laplace_diag;
 laplace2 = [sparse((m + 1)*n, m), [sparse(m, (m - 1)*n); laplace_diag; sparse(m, (m - 1)*n)], sparse((m + 1)*n, m)];
 
-laplace = [laplace1 * (m * n), sparse((m + 1) * n,  (n + 1) * m); sparse(m * (n + 1), (m + 1) * n), laplace2 * (m * n)];
+laplace_d = [laplace1 * (m * n), sparse((m + 1) * n,  (n + 1) * m); sparse(m * (n + 1), (m + 1) * n), laplace2 * (m * n)];
 
 end

@@ -1,4 +1,4 @@
-function [omega1, omega2] = grid(m ,n)
+function [omega1, omega2] = Grid(m ,n)
 
 % implementation for non-square grids follow later
 assert(m == n);
